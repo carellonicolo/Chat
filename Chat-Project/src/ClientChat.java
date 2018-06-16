@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
-
+//PORCAMADONNA
 public class ClientChat {
     private Socket socket;
     private Scanner input;
