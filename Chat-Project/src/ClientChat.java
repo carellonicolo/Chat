@@ -9,7 +9,7 @@ public class ClientChat {
     private PrintStream output;
     private final String name;
     private final InetAddress IP;
-    
+            //CIAONE
     ClientChat(String name, InetAddress IP) throws IOException, InterruptedException{
         this.name = name;
         this.IP = IP;
