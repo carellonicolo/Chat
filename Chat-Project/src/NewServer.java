@@ -35,7 +35,11 @@ public class NewServer implements Runnable{
         System.out.println("> Inizializzazione degli stream di input e output avvennuta on sucesso...\n> Ora è possibile chattare con il client! ");
     }
     
-    /************** INVIO MESSAGGI ******************/
+    
+    
+    
+    
+    /********************************** INVIO MESSAGGI *******************************************/
     void send() throws IOException, InterruptedException{
         Scanner localInput = new Scanner(System.in);
         String messOUT = "";
@@ -44,36 +48,51 @@ public class NewServer implements Runnable{
             System.out.print("> Server di "+name + ": ");
             //leggo il testo dalla tastiera e controllo che non sia stato digitato il comando close
             messOUT = localInput.next();
-            if(messOUT.equals("/close"))
-                break;
-              
             //stampo sullo stream di output il messaggio 
             outStream.print("Server di "+name+": "+messOUT);
-        }
+            
+            
+            if(messOUT.equals("/close"))
+                break;
+
+        }//while
         
-        System.out.println("Spegnimento Server in corso...");
+        System.out.println("> Spegnimento Server in corso...\n> E' stato notificato a tutti i client lo spegnimento del server... ");
+        
+
         //chiudo le socket e le connessioni in arrivo
+        inStream.close();
+        outStream.close();
         socket.close();
         serverSocket.close();
-        Thread.sleep(70);
+        
+        
+        Thread.sleep(50);
         System.out.println("Server chiuso correttamente!");
         //forzo la chiusura del programma
         System.exit(0);
-    }//costructor
+        
+    }//SEND
 
-    /***************** RICEVO MESSAGGI ********************+*/
+    
+    
+    
+    
+    /******************************** RICEVO MESSAGGI ************************************/
     @Override
-    public void run() {//RICEVO MESSAGGI
+    public void run() {
         
         String mess = "";
     
         while(true){
             mess = inStream.next();
             System.out.println("> "+mess);
-            try {//addormento il thread per 10 secondi
+            try {//addormento il thread per 10 millisecondi
                 Thread.sleep(10);
+
             } catch (InterruptedException ex) {
                 Logger.getLogger(NewServer.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("Eccezione generata nella gestione del thread!\n " + ex);
                 System.exit(0);
             }
         }//while
@@ -82,16 +101,23 @@ public class NewServer implements Runnable{
     }//THREAD
     
     
+    
+    
+    
+    
+    
+    /******************************** MAIN ************************************/
+
     public static void main(String[] args){
         String nameServer;
         Scanner s = new Scanner(System.in);
         
         while(true){
-            System.out.print("Inserisci il nome del server: ");
+            System.out.print("> Inserisci il nome del server: ");
             nameServer = s.next();
             if(!nameServer.equals(" ") && !nameServer.equals(""))
                 break;
-            System.err.println("Inserire un nome del server valido!!");
+            System.err.println("> Inserire un nome del server valido!!");
         }
         
         
@@ -104,9 +130,12 @@ public class NewServer implements Runnable{
         server.send();
         }catch(IOException | InterruptedException e){
             System.err.print(e);
+            System.exit(0);
         }
         
         
        
-    }
+    }//main
+    
+    
 }//newServer

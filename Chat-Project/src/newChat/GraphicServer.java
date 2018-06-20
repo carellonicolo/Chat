@@ -1,3 +1,5 @@
+package newChat;
+
 
 public class GraphicServer extends javax.swing.JFrame {
 
