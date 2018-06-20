@@ -1,36 +1,39 @@
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-//PORCAMADONNA
-public class ClientChat {
+public class NewClient implements Runnable{
     private Socket socket;
     private Scanner input;
     private PrintStream output;
     private final String name;
     private final InetAddress IP;
-            //CIAONE
     
-            //PORCODIO
-    
-    
-    
-    ClientChat(String name, InetAddress IP) throws IOException, InterruptedException{
+    NewClient(String name, InetAddress IP) throws IOException, InterruptedException{
+        
+        //INIZIALIZZO I PARAMETRI
         this.name = name;
         this.IP = IP;
+        
+        //CREO LA SOCKET
         socket = new Socket(IP, 9876);
         Thread.sleep(100);
         System.out.println("> Connessione al server riuscita... ");
         Thread.sleep(100);
+        
+        //COLLEGO GLI STREAM
         System.out.println("> Collegamento dei flussi dati in corso... ");
         input = new Scanner(socket.getInputStream());
         output = new PrintStream(socket.getOutputStream());
+        
         Thread.sleep(100);
         System.out.println("> Collegamento dei flussi dati riuscita... ");
         
     }
     
-    void chatta(){
+    void send(){
        Scanner stin = new Scanner(System.in);
        String messIN;
        String messOUT;
@@ -39,7 +42,25 @@ public class ClientChat {
        }
     }
     
-     public static void main(String[] args) throws IOException, InterruptedException{
+    
+    
+     @Override
+    public void run() {//riceevo i messaggi dal server
+        String mess = "";
+        
+        while(true){
+            mess = input.next();
+            System.out.println("> "+mess);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(NewClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+               
+    }//Thread
+    
+     public static void main(String[] args){
         
         Scanner s = new Scanner(System.in);
         InetAddress IPServer;
@@ -73,27 +94,19 @@ public class ClientChat {
         
         
         
-        ClientChat chat = new ClientChat(nomeUtente, IPServer);
-        
-        
-         try {
-        Thread.sleep(10000);
-        }
-        catch (InterruptedException e) {   } 
-        System.out.println("1111111");
-        
+        NewClient chat;
         try {
-        Thread.sleep(10000);
+            chat = new NewClient(nomeUtente, IPServer);
+        } catch (IOException ex) {
+            Logger.getLogger(NewClient.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(NewClient.class.getName()).log(Level.SEVERE, null, ex);
         }
-        catch (InterruptedException e) {   }
+        Thread t = new Thread(chat);
+        t.start(); 
+        chat.send();
         
-        
-        
-        
-       
-        chat.chatta();
         
     }//MAIN
-    
-    
+
 }//newCient

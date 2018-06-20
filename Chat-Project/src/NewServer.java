@@ -22,17 +22,17 @@ public class NewServer implements Runnable{
         
         //CREO LA SOCKETSERVER
         serverSocket = new ServerSocket(10000);
-        System.out.println("> diocane");
+        System.out.println("> Istanza di rete creata con successo...\n> in attesa di client...");
         //COLLEGO LA SERVERSOCKET AD UNA SOCKET NORMALE ED ACCETTO IN INGRESSO LE CONNESSIONEI
-        socket = serverSocket.accept();
+        socket = serverSocket.accept();//il metodo acept è bloccante
         
-        System.out.println("> Istanza di rete creata con successo...");
+        System.out.println("> Tentativo di collegamento con un client in corso...");
         //Thread.sleep(100);
         
         //COLLEGO GLI STREAM DI INPUT E OUTPUT
         inStream = new Scanner(socket.getInputStream());
         outStream = new PrintStream(socket.getOutputStream());
-        System.out.println("> Inizializzazione degli stream di input e output avvennuta on sucesso... ");
+        System.out.println("> Inizializzazione degli stream di input e output avvennuta on sucesso...\n> Ora è possibile chattare con il client! ");
     }
     
     /************** INVIO MESSAGGI ******************/
