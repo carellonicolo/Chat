@@ -7,8 +7,8 @@ import java.util.logging.Logger;
 public class NewServer implements Runnable{
     
     private ServerSocket serverSocket;
-     Socket socket;            
-    private Scanner stdin = new Scanner(System.in);
+    private final Socket socket;            
+    private BufferedReader inputStream; 
     private Scanner inStream;
     private PrintStream outStream;
     private String name;
@@ -30,7 +30,7 @@ public class NewServer implements Runnable{
         //Thread.sleep(100);
         
         //COLLEGO GLI STREAM DI INPUT E OUTPUT
-        inStream = new Scanner(socket.getInputStream());
+        inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         outStream = new PrintStream(socket.getOutputStream());
         System.out.println("> Inizializzazione degli stream di input e output avvennuta on sucesso...\n> Ora è possibile chattare con il client! ");
     }
@@ -41,17 +41,16 @@ public class NewServer implements Runnable{
     
     /********************************** INVIO MESSAGGI *******************************************/
     void send() throws IOException, InterruptedException{
-        Scanner localInput = new Scanner(System.in);
+        BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
         String messOUT = "";
         
         while(true){
             System.out.print("> Server di "+name + ": ");
             //leggo il testo dalla tastiera e controllo che non sia stato digitato il comando close
-            messOUT = localInput.next();
+            messOUT = stdin.readLine();
             //stampo sullo stream di output il messaggio 
             outStream.print("Server di "+name+": "+messOUT);
-            
-            
+                
             if(messOUT.equals("/close"))
                 break;
 
@@ -59,13 +58,12 @@ public class NewServer implements Runnable{
         
         System.out.println("> Spegnimento Server in corso...\n> E' stato notificato a tutti i client lo spegnimento del server... ");
         
-
         //chiudo le socket e le connessioni in arrivo
         inStream.close();
         outStream.close();
+        stdin.close();
         socket.close();
         serverSocket.close();
-        
         
         Thread.sleep(50);
         System.out.println("Server chiuso correttamente!");
@@ -85,16 +83,16 @@ public class NewServer implements Runnable{
         String mess = "";
     
         while(true){
-            mess = inStream.next();
-            System.out.println("> "+mess);
-            try {//addormento il thread per 10 millisecondi
-                Thread.sleep(10);
-
-            } catch (InterruptedException ex) {
+            
+            //leggo i messaggi dal bufferedReader
+            try {
+                mess = inputStream.readLine();
+            } catch (IOException ex) {
                 Logger.getLogger(NewServer.class.getName()).log(Level.SEVERE, null, ex);
-                System.out.println("Eccezione generata nella gestione del thread!\n " + ex);
-                System.exit(0);
             }
+                    
+            System.out.println("> "+mess);
+            
         }//while
         
         

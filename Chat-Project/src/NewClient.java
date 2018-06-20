@@ -5,10 +5,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class NewClient implements Runnable{
-    private Socket socket;
-    private Scanner input;
-    private BufferedReader inputStream;
-    private PrintStream outputStream;
+    private final Socket socket;
+    private final BufferedReader inputStream;
+    private final PrintStream outputStream;
     private final String name;
     private final InetAddress IP;
     
@@ -31,7 +30,6 @@ public class NewClient implements Runnable{
         
         //COLLEGO GLI STREAM
         System.out.println("> Collegamento dei flussi dati in corso... ");
-        input = new Scanner(socket.getInputStream());
         inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         outputStream = new PrintStream(socket.getOutputStream());
         
@@ -45,10 +43,11 @@ public class NewClient implements Runnable{
     
     /********************************** INVIO MESSAGGI *******************************************/
     void send() throws IOException, Exception{
-       Scanner stdin = new Scanner(System.in);
+       BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
        String messOUT;
+       
        while(true){
-           messOUT = stdin.next();
+           messOUT = stdin.readLine();
            
            if(messOUT.equals("/logout"))
                break;
@@ -56,12 +55,19 @@ public class NewClient implements Runnable{
            outputStream.print(messOUT);
        }
        
+       //STAMPO RESOCONTO DI LOGOUT
        System.out.println("Logout effettuato con successo!\nSei stato disconnesso dalla chat!");
+       
+       //MANDO L'ULTIMO MESSAGGIO DI SALUTO AL SERVER
        outputStream.println(""+name + " ha abbandonato la chat!");
+       
+       //CHIUDO TUTTE LE CONNESSIONI
        outputStream.close();
-       input.close();
+       stdin.close();
        inputStream.close();
        socket.close();
+       
+       //LANCIO UN'ECCEZIONE CHE GESTIRA' IL MAIN PER CHIUDERE IL THREAD
        throw new Exception();
     }
     
@@ -87,16 +93,9 @@ public class NewClient implements Runnable{
                 break;
             
             System.out.println("> "+mess);
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException ex) {
-                //Logger.getLogger(NewClient.class.getName()).log(Level.SEVERE, null, ex);
-                System.out.println("Eccezione generata nella gestione del thread!\n " + ex);
-                System.exit(0);
-
-            }//catch
             
         }//while
+        
         
         
     }//Thread
@@ -149,6 +148,8 @@ public class NewClient implements Runnable{
             t = new Thread(chat);
             t.start();
             chat.send();
+            
+            
             
         } catch (IOException | InterruptedException ex) {
             System.out.println("> Errore nella creazione di una nuova istanza del Client, Eccezione inaspettata generata! \n"+ex);  
