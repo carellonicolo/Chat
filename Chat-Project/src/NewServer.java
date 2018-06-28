@@ -1,112 +1,134 @@
+
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class NewServer implements Runnable{
-    
+public class NewServer implements Runnable {
+
     private ServerSocket serverSocket;
-     Socket socket;            
-    private Scanner stdin = new Scanner(System.in);
-    private Scanner inStream;
+    private final Socket socket;
+    private BufferedReader inStreambufferedreader;
     private PrintStream outStream;
     private String name;
     private int porta;
- 
-    /************************** CONTRUCTOR ****************************************/
-    NewServer(String name, int porta) throws IOException, InterruptedException{
-        System.out.println("> tentativo di inizializzazione della connessione sulla porta: "+porta+"...");
+
+    /**
+     * ************************ CONTRUCTOR ***************************************
+     */
+    NewServer(String name, int porta) throws IOException, InterruptedException {
+        System.out.println("> tentativo di inizializzazione della connessione sulla porta: " + porta + "...");
         this.porta = porta;
         this.name = name;
-        
+
         //CREO LA SOCKETSERVER
         serverSocket = new ServerSocket(10000);
         System.out.println("> Istanza di rete creata con successo...\n> in attesa di client...");
         //COLLEGO LA SERVERSOCKET AD UNA SOCKET NORMALE ED ACCETTO IN INGRESSO LE CONNESSIONEI
         socket = serverSocket.accept();//il metodo acept è bloccante
-        
+
         System.out.println("> Tentativo di collegamento con un client in corso...");
         //Thread.sleep(100);
-        
+
         //COLLEGO GLI STREAM DI INPUT E OUTPUT
-        inStream = new Scanner(socket.getInputStream());
+        inStreambufferedreader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         outStream = new PrintStream(socket.getOutputStream());
         System.out.println("> Inizializzazione degli stream di input e output avvennuta on sucesso...\n> Ora è possibile chattare con il client! ");
     }
-    
-    /************** INVIO MESSAGGI ******************/
-    void send() throws IOException, InterruptedException{
-        Scanner localInput = new Scanner(System.in);
+
+    /**
+     * ******************************** INVIO MESSAGGI ******************************************
+     */
+    void send() throws IOException, InterruptedException {
+        BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
         String messOUT = "";
-        
-        while(true){
-            System.out.print("> Server di "+name + ": ");
+
+        while (true) {
+            System.out.print("> Server di " + name + ": ");
             //leggo il testo dalla tastiera e controllo che non sia stato digitato il comando close
-            messOUT = localInput.next();
-            if(messOUT.equals("/close"))
-                break;
-              
+            messOUT = stdin.readLine();
             //stampo sullo stream di output il messaggio 
-            outStream.print("Server di "+name+": "+messOUT);
-        }
-        
-        System.out.println("Spegnimento Server in corso...");
+            outStream.print("Server di " + name + ": " + messOUT);
+
+            if (messOUT.equals("/close")) {
+                break;
+            }
+
+        }//while
+
+        System.out.println("> Spegnimento Server in corso...\n> E' stato notificato a tutti i client lo spegnimento del server... ");
+
         //chiudo le socket e le connessioni in arrivo
+        outStream.close();
+        stdin.close();
         socket.close();
         serverSocket.close();
-        Thread.sleep(70);
+
+        Thread.sleep(50);
         System.out.println("Server chiuso correttamente!");
         //forzo la chiusura del programma
         System.exit(0);
-    }//costructor
 
-    /***************** RICEVO MESSAGGI ********************+*/
+    }//SEND
+
+    /**
+     * ****************************** RICEVO MESSAGGI ***********************************
+     */
     @Override
-    public void run() {//RICEVO MESSAGGI
-        
+    public void run() {
+
         String mess = "";
-    
-        while(true){
-            mess = inStream.next();
-            System.out.println("> "+mess);
-            try {//addormento il thread per 10 secondi
-                Thread.sleep(10);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(NewServer.class.getName()).log(Level.SEVERE, null, ex);
-                System.exit(0);
-            }
-        }//while
         
-        
+        try {
+            
+            while (!socket.isClosed() && socket.isConnected()) {
+
+                //leggo i messaggi dal bufferedReader
+                mess = inStreambufferedreader.readLine();
+                System.out.println();
+                System.out.println(mess);
+                System.out.print("> Server di " + name + ": ");
+            }//while
+
+        } catch (IOException ex) {
+            Logger.getLogger(NewServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }//THREAD
+
     
     
-    public static void main(String[] args){
+    
+    
+    /********************************** MAIN ************************************/
+    public static void main(String[] args) {
         String nameServer;
         Scanner s = new Scanner(System.in);
-        
-        while(true){
-            System.out.print("Inserisci il nome del server: ");
+        System.out.println("NEW_SERVER");
+
+        while (true) {
+            System.out.print("> Inserisci il nome del server: ");
             nameServer = s.next();
-            if(!nameServer.equals(" ") && !nameServer.equals(""))
+            if (!nameServer.equals(" ") && !nameServer.equals("")) {
                 break;
-            System.err.println("Inserire un nome del server valido!!");
+            }
+            System.err.println("> Inserire un nome del server valido!!");
         }
-        
-        
+
         int porta = 9876;//per ora la dichiaro da codice, poi la chiedo all'utente
-        try{
+        try {
+
             NewServer server = new NewServer(nameServer, porta);
-            System.out.println("ciao");
             Thread t = new Thread(server);
             t.start();
-        server.send();
-        }catch(IOException | InterruptedException e){
+            server.send();
+
+        } catch (IOException | InterruptedException e) {
             System.err.print(e);
+            System.exit(0);
         }
-        
-        
-       
-    }
+
+    }//main
+
 }//newServer

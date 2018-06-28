@@ -1,3 +1,5 @@
+package oldChat;
+
 import java.net.*;
 import java.io.*;
 import java.util.Scanner;
