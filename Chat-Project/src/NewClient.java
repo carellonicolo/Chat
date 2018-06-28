@@ -96,15 +96,18 @@ public class NewClient implements Runnable{
         
         NewClient chat;
         try {
+            
+            
             chat = new NewClient(nomeUtente, IPServer);
-        } catch (IOException ex) {
-            Logger.getLogger(NewClient.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
+            Thread t = new Thread(chat);
+            t.start(); 
+            chat.send();
+        
+        
+        } catch (IOException | InterruptedException ex) {
             Logger.getLogger(NewClient.class.getName()).log(Level.SEVERE, null, ex);
         }
-        Thread t = new Thread(chat);
-        t.start(); 
-        chat.send();
+
         
         
     }//MAIN
